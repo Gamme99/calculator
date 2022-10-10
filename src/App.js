@@ -1,151 +1,114 @@
 import "./App.css";
-import { useState } from "react";
+import { useReducer, useState } from "react";
+
+const ACTION = {
+  NUMBER: "number",
+  OPERATION: "operation",
+  CLEAR: "clear",
+  EVALUATE: "evaluate",
+};
+
+function reducer(state, { type, payload }) {
+  // switch(type){
+  //   case ACTION.CLEAR:
+  //     return {
+  //       ...state,
+  //       operation: ${operand || ""}${payload}
+  //     }
+  // }
+}
 
 function App() {
-  const [input, setInput] = useState("");
+  const [{ operand, operation }, setInput] = useReducer(reducer, {});
 
-  var allInput = "";
+  const [typed, setTyped] = useState("");
+  const [prev, setPrev] = useState("");
+  const memory = [];
+
   const handleClick = (value) => {
-    //e.preventDefault();
-    setInput(value++);
-    //console.log(e);
-    allInput = value;
+    if (!isNaN(value)) {
+      // memory.push(parseInt(value));
+      console.log("is number");
+    } else {
+      //memory.push(value);
+      console.log("not number");
+    }
+
+    if (value == "C") {
+      // setPrev("");
+      setTyped(typed.slice("1", -1));
+    } else if (value == "ln") {
+      setTyped(" " + typed + value + "(");
+    } else {
+      setTyped(" " + typed + value);
+    }
+
+    //console.log("size: " + memory.length);
   };
 
-  const handleClear = () => {
-    setInput();
-  };
+  // const initialState = {
+  //   input:
+  // }
+  //console.log("size: " + memory.length);
 
   return (
     <div className="App">
+      {/* {memory.forEach((element) => {
+        console.log(element);
+        if (element != undefined) {
+          console.log(element);
+        }
+      })} */}
       <div className="container">
-        <div className="display">
-          <div className="screen">
-            {input} {allInput}
-          </div>
-          {/* <input type="text" value={input}></input> */}
+        <div className="screen">
+          <div className="result">{typed || 0}</div>
         </div>
-        <form className="number">
-          <table>
-            <tr className="rows">
-              <button type="button" onClick={() => handleClear()}>
-                <th>C</th>
-              </button>
-              <button type="button" onClick={() => handleClick("sin")}>
-                <th>sin</th>
-              </button>
+        <div className="firstLayer">
+          <button onClick={() => handleClick("C")}>C</button>
+          <button onClick={() => handleClick("sin")}>sin</button>
+          <button onClick={() => handleClick("cos")}>cos</button>
+          <button onClick={() => handleClick("tan")}>tan</button>
+          <button onClick={() => handleClick("cot")}>cot</button>
+          <button onClick={() => handleClick("/")}>/</button>
+        </div>
+        <div className="secondLayer">
+          <button onClick={() => handleClick("(")}> (</button>
+          <button onClick={() => handleClick(")")}> )</button>
+          <button onClick={() => handleClick("7")}>7</button>
+          <button onClick={() => handleClick("8")}>8</button>
+          <button onClick={() => handleClick("9")}>9</button>
+          <button onClick={() => handleClick("x")}>x</button>
+        </div>
 
-              <button type="button" onClick={() => handleClick("cos")}>
-                <th>cos</th>
-              </button>
+        <div className="thirdLayer">
+          <button>
+            <span onClick={() => handleClick("{")}>&#123;</span>
+          </button>
+          <button onClick={() => handleClick("}")}>
+            <span>&#x7D;</span>
+          </button>
+          <button onClick={() => handleClick("4")}>4</button>
+          <button onClick={() => handleClick("5")}>5</button>
+          <button onClick={() => handleClick("6")}>6</button>
+          <button onClick={() => handleClick("-")}>-</button>
+        </div>
 
-              <button type="button" onClick={() => handleClick("tan")}>
-                <th>tan</th>
-              </button>
-
-              <button type="button" onClick={() => handleClick("cot")}>
-                <th>cot</th>
-              </button>
-
-              <button type="button" onClick={() => handleClick("/")}>
-                <th>/</th>
-              </button>
-            </tr>
-            <tr className="rows">
-              <button type="button" onClick={() => handleClick("(")}>
-                <th> (</th>
-              </button>
-              <button type="button" onClick={() => handleClick(")")}>
-                <th>)</th>
-              </button>
-
-              <button type="button" onClick={() => handleClick(7)}>
-                <th>7</th>
-              </button>
-
-              <button type="button" onClick={() => handleClick(8)}>
-                <th>8</th>
-              </button>
-
-              <button type="button" onClick={() => handleClick(9)}>
-                <th>9</th>
-              </button>
-
-              <button type="button" onClick={() => handleClick("*")}>
-                <th className="product">+</th>
-              </button>
-            </tr>
-            <tr className="rows">
-              <button type="button" onClick={() => handleClick("{")}>
-                <th>
-                  {" "}
-                  <span>&#123;</span>
-                </th>
-              </button>
-              <button type="button" onClick={() => handleClick("}")}>
-                <th>
-                  <span>&#x7D;</span>
-                </th>
-              </button>
-              <button type="button" onClick={() => handleClick(4)}>
-                <th>4</th>
-              </button>
-              <button type="button" onClick={() => handleClick(5)}>
-                <th>5</th>
-              </button>
-              <button type="button" onClick={() => handleClick(6)}>
-                <th>6</th>
-              </button>
-              <button type="button" onClick={() => handleClick("-")}>
-                <th className="subtract">-</th>
-              </button>
-            </tr>
-            <tr className="rows">
-              <button type="button" onClick={() => handleClick("log")}>
-                <th> log</th>
-              </button>
-              <button type="button" onClick={() => handleClick("ln")}>
-                <th>ln</th>
-              </button>
-              <button type="button" onClick={() => handleClick(1)}>
-                <th>1</th>
-              </button>
-              <button type="button" onClick={() => handleClick(2)}>
-                <th>2</th>
-              </button>
-              <button type="button" onClick={() => handleClick(3)}>
-                <th>3</th>
-              </button>
-              <button type="button" onClick={() => handleClick("+")}>
-                <th className="addition">+</th>
-              </button>
-            </tr>
-            <tr className="rows">
-              <button>
-                <th> ...</th>
-              </button>
-              <button>
-                <th> ...</th>
-              </button>
-              <button type="button" onClick={() => handleClick("0")}>
-                <th>0</th>
-              </button>
-              <button>
-                <th>...</th>
-              </button>
-              <button type="button" onClick={() => handleClick(".")}>
-                <th className="dot">.</th>
-              </button>
-              <button>
-                <th>=</th>
-              </button>
-            </tr>
-          </table>
-        </form>
-      </div>
-
-      <div className="test">
-        <div className="content">I am here</div>
+        <div className="fourthLayer">
+          <button onClick={() => handleClick("log")}>log</button>
+          <button onClick={() => handleClick("ln")}>ln</button>
+          <button onClick={() => handleClick("1")}>1</button>
+          <button onClick={() => handleClick("2")}>2</button>
+          <button onClick={() => handleClick("3")}>3</button>
+          <button onClick={() => handleClick("+")}>+</button>
+        </div>
+        <div className="finalLayer">
+          <button>...</button>
+          <button>...</button>
+          <button onClick={() => handleClick("0")}>0</button>
+          <button onClick={() => handleClick(".")}>.</button>
+          <button onClick={() => handleClick("(-)")}>(-)</button>
+          <button onClick={() => handleClick("=")}>=</button>
+        </div>
       </div>
     </div>
   );

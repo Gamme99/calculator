@@ -1,69 +1,34 @@
 body {
-  display: flex;
+  background-color: rgb(63, 135, 163);
 }
+
 .container {
   display: f;
   justify-content: center;
   align-items: center;
-  margin-left: 250px;
-  margin-top: 250px;
+  margin: 10px;
   border: solid red;
-  background-color: rgb(62, 59, 59);
+  background-color: rgb(199, 188, 188);
   height: 600px;
   width: 600px;
 }
 
 .screen {
-  width: 360px;
-  height: 40px;
-  font-size: 30px;
-  background-color: white;
   border-style: solid;
   border-radius: 10px;
+  height: 60px;
+  width: 298px;
+  font-size: 28px;
+  text-align: end;
 }
 
-table {
-  border-style: solid green;
-  /* margin-top: 100px;
-  margin-left: 100px; */
-}
-
-th {
-  padding: 5px 5px 5px 5px;
-  font-size: 25px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /* color: white; */
-  /* border: solid black; */
+.result {
+  padding-top: 30px;
 }
 
 button {
-  width: 60px;
+  appearance: none;
   height: 50px;
-  border-radius: 10px;
-}
-
-.test {
-  width: 200px;
-  height: 200px;
-  border: solid black;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.product {
-  transform: rotate(45deg);
-}
-.product,
-.addition,
-.subtract {
-  font-size: 30px;
-}
-
-.content {
-  border: solid red;
-  height: 15px;
-  width: 80px;
+  width: 50px;
+  font-size: 20px;
 }
