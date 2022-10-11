@@ -23,27 +23,111 @@ function App() {
 
   const [typed, setTyped] = useState("");
   const [prev, setPrev] = useState("");
+
+  const [result, setResult] = useState("");
   const memory = [];
 
   const handleClick = (value) => {
-    if (!isNaN(value)) {
-      // memory.push(parseInt(value));
-      console.log("is number");
-    } else {
-      //memory.push(value);
-      console.log("not number");
-    }
+    // if (!isNaN(value)) {
+    //   // memory.push(parseInt(value));
+    //   console.log("is number");
+    // } else {
+    //   //memory.push(value);
+    //   console.log("not number");
+    // }
 
     if (value == "C") {
       // setPrev("");
-      setTyped(typed.slice("1", -1));
+      setTyped("");
+      setResult("");
     } else if (value == "ln") {
-      setTyped(" " + typed + value + "(");
+      setTyped(typed + value);
+      setResult(result + value);
+    } else if (value == "log") {
+      //var calc = Math.log10(value);
+      setTyped(typed + value);
+      setResult(result + value);
+    } else if (value == ")") {
+      for (let i = 1; i <= result.length; i++) {
+        var log = result.slice(-i);
+
+        if (log.includes("log(")) {
+          var chunk = result.slice(-(i - 4));
+          var cleaned = "";
+          console.log("chunk: " + chunk);
+          // chunk.forEach((element) => {
+          //   if (!NaN(element)) {
+          //     cleaned += element;
+          //   }
+          // });
+          console.log("number: " + cleaned);
+          var prev = result.substring(0, result.length - i);
+
+          var calc = Math.log10(result.slice(-(i - 4)));
+          calc = calc.toFixed(4);
+
+          setTyped(typed + value);
+          setResult(prev + calc);
+          break;
+        } else if (log.includes("ln(")) {
+          console.log("prev : " + prev);
+          var prev = result.substring(0, result.length - i);
+          var calc = Math.log(result.slice(-(i - 3)));
+          calc = calc.toFixed(4);
+          console.log("calc : " + calc);
+          setTyped(typed + value);
+          setResult(prev + calc);
+          break;
+        } else if (log.includes("sin(")) {
+          var prev = result.substring(0, result.length - i);
+          var calc = Math.sin((result.slice(-(i - 4)) * Math.PI) / 180);
+          console.log("number : " + result.slice(-(i - 4)));
+          calc = calc.toFixed(4);
+          console.log("calc : " + calc);
+          setTyped(typed + value);
+          setResult(prev + calc);
+          break;
+        } else if (log.includes("cos(")) {
+          var prev = result.substring(0, result.length - i);
+          var calc = Math.cos((result.slice(-(i - 4)) * Math.PI) / 180);
+          console.log("number : " + result.slice(-(i - 4)));
+          calc = calc.toFixed(4);
+          console.log("calc : " + calc);
+          setTyped(typed + value);
+          setResult(prev + calc);
+          break;
+        } else if (log.includes("tan(")) {
+          var prev = result.substring(0, result.length - i);
+          var calc = Math.tan((result.slice(-(i - 4)) * Math.PI) / 180);
+          console.log("number : " + result.slice(-(i - 4)));
+          calc = calc.toFixed(4);
+          console.log("calc : " + calc);
+          setTyped(typed + value);
+          setResult(prev + calc);
+          break;
+        } else if (log.includes("cot(")) {
+          var prev = result.substring(0, result.length - i);
+          var calc = 1 / Math.tan((result.slice(-(i - 4)) * Math.PI) / 180);
+          console.log("number : " + result.slice(-(i - 4)));
+          calc = calc.toFixed(4);
+          console.log("calc : " + calc);
+          setTyped(typed + value);
+          setResult(prev + calc);
+          break;
+        }
+
+        console.log("not found : " + log);
+      }
+    } else if (value == "=") {
+      setResult(result);
     } else {
-      setTyped(" " + typed + value);
+      setTyped(typed + value);
+      setResult(result + value);
     }
 
-    //console.log("size: " + memory.length);
+    console.log("result: " + result);
+
+    console.log("size: " + result.length);
   };
 
   // const initialState = {

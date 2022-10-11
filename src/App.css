@@ -18,12 +18,18 @@ body {
   border-radius: 10px;
   height: 60px;
   width: 298px;
-  font-size: 28px;
-  text-align: end;
+  font-size: 20px;
 }
 
 .result {
+  text-align: end;
   padding-top: 30px;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  /* margin-left: 20px; */
+  /* text-align: end;
+  color: white; */
 }
 
 button {
