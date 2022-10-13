@@ -9,10 +9,6 @@ const ACTION = {
   EVALUATE: "evaluate",
 };
 
-function calculateAns(expression) {
-  return 5;
-}
-
 function App() {
   //const [{ operand, operation }, setInput] = useReducer(reducer, {});
 
@@ -29,27 +25,29 @@ function App() {
       } else if (operate == "ln") {
         return Math.log(number);
       } else if (operate == "sin") {
-        return Math.sin(number * (180 / Math.PI));
+        return Math.sin(number);
       } else if (operate == "cos") {
-        return Math.cos(number * (180 / Math.PI));
+        return Math.cos(number);
       } else if (operate == "tan") {
-        return Math.tan(number * (180 / Math.PI));
+        return Math.tan(number);
       } else if (operate == "cot") {
-        return 1 / Math.tan(number * (180 / Math.PI));
+        var ans = 1 / Math.tan(number);
+        return ans;
       }
     }
   }
 
   function evaluateOper(operate, num1, num2) {
-    console.log("inside the  evaluating oper : " + num1 + " " + num2);
     num1 = parseFloat(num1);
     num2 = parseFloat(num2);
+
+    console.log("here :" + num1 + num2);
     let ans = 0;
     if (operate == "-") {
       return num1 - num2;
     } else if (operate == "+") {
       ans = num1 + num2;
-      //console.log("answer : " + ans);
+
       return ans;
     } else if (operate == "/") {
       if (num2 == 0) {
@@ -65,34 +63,38 @@ function App() {
   }
 
   function evaluateExpression(expression) {
-    console.log("inside eval: " + expression);
-    let oper = [];
     let numbers = [];
     let Err = false;
-    console.log("expression here |" + expression + "| : " + expression.length);
     expression.forEach((element) => {
-      console.log("element : " + element);
       if (Err) {
         return "Error";
       }
 
+      if (element == "") {
+        return;
+      }
+
+      // operators
       if (isNaN(element)) {
+        // ln, log, sin, cos, tan, cot
         if (isTrigOrLog(element) == true) {
           var ans = EvaltrigAnLog(element, parseFloat(numbers.pop()));
 
-          console.log("trig or log ans" + ans);
           if (isNaN(ans)) {
             Err = true;
             return "Error";
           }
 
-          ans = ans.toFixed(7);
+          ans = ans.toFixed(8);
 
           numbers.push(ans);
-        } else {
+        }
+        // - + / and *
+        else {
           var num1 = parseFloat(numbers.pop());
           var num2 = parseFloat(numbers.pop());
-          console.log("we are evaluating oper : ");
+          console.log(" before: " + num1 + " : " + num2);
+
           var ans = evaluateOper(element, num2, num1);
 
           if (ans == "Error") {
@@ -103,14 +105,12 @@ function App() {
         }
       } else {
         numbers.push(element);
-        console.log("if number eval: |" + numbers + "|");
       }
     });
     if (Err) {
       return "Error";
     } else {
-      console.log("finaly answer: " + numbers);
-      numbers = numbers[0].toFixed(8);
+      //numbers = numbers[0].toFixed(8);
       return numbers;
     }
   }
@@ -145,13 +145,12 @@ function App() {
     }
   }
 
-  function numberCalc(operate, number1, number2) {}
+  // converts the given expression to PostFix
   function convertToPostFix(ans) {
-    //console.log("Error : " + ans);
     if (ans == -1) {
       return "Error";
     }
-    console.log("answer right before |" + ans + "|");
+
     var expression;
     ans = ans.replace(/\s+/g, "");
     expression = ans.split(",");
@@ -160,42 +159,24 @@ function App() {
     let numbers = [];
     const operator = ["-", "+", "/", "x", "log", "sin", "cos", "tan", "cot"];
 
+    console.log("expression: " + expression);
+
     var expectingOperator = false;
     var skip = false;
     expression.forEach((element) => {
-      console.log("stack " + stack);
-      console.log("numbers " + numbers);
+      console.log("heeerrreeee: ");
       if (skip) {
-        console.log("mission aborted ");
         return;
-      }
-
-      // if its number
-      console.log("element: " + element);
-      if (!isNaN(element)) {
-        if (expectingOperator) {
-          skip = true;
-          console.log("retrned cuz found: " + element);
-          return;
-        }
-        numbers.push(element);
-        console.log("here all cool " + element);
-
-        expectingOperator = true;
-        console.log("numbers " + numbers);
       }
 
       // if opening
       else if (element == "(") {
-        expectingOperator = false;
-        console.log("-------------------------- ");
-        console.log("expecting operator: " + expectingOperator);
+        //expectingOperator = false;
         if (expectingOperator) {
+          console.log("busted: ");
           skip = true;
-          console.log(" couldnt pushed ( into stack ");
           return;
         }
-        console.log("pushed ( into stack ");
         stack.push(element);
       }
 
@@ -205,7 +186,6 @@ function App() {
           skip = true;
           return;
         }
-        console.log("stack " + stack);
         var top = stack.pop();
         while (stack.length != 0 && top != "(") {
           numbers.push(top);
@@ -214,16 +194,17 @@ function App() {
 
         // if stack is empty before opening is found
         if (top != "(") {
-          console.log("no matching parentheses " + top);
           skip = true;
           return;
         }
+        // console.log("stack : " + stack);
+        // console.log("number : " + numbers);
 
         expectingOperator = true;
       }
 
       // if operators
-      else {
+      else if (isTrigOrLog(element) || operator.includes(element)) {
         if (
           element == "log" ||
           element == "ln" ||
@@ -232,44 +213,19 @@ function App() {
           element == "tan" ||
           element == "cot"
         ) {
-          console.log("top: " + " : " + (stack.slice(-1) == "+"));
-          console.log("stack length: " + stack.length);
-          console.log("top is trig or logar: " + isTrigOrLog(stack.slice(-1)));
-          console.log(
-            stack.slice(-1) +
-              " >  " +
-              element +
-              " : " +
-              (precedenceOf(stack[stack.length - 1]) >= precedenceOf(element))
-          );
-          console.log(
-            "top is operator: " + operator.includes(stack[stack.length - 1])
-          );
-
-          let count = 0;
           var top = "";
-          var recent = stack[stack.length - 1];
           while (
             stack.length != 0 &&
             operator.includes(stack[stack.length - 1]) &&
             precedenceOf(stack[stack.length - 1]) >= precedenceOf(element)
           ) {
-            //var top = stack[stack.length - 1];
-            console.log(
-              "inside the while loppppppppp: " + stack[stack.length - 1]
-            );
-
             numbers.push(stack[stack.length - 1]);
             stack.pop();
-
-            count++;
           }
-          console.log("number here: " + numbers);
-          console.log("stack here1: " + stack);
-
+          //console.log("push this in stack : " + element);
           stack.push(element);
           expectingOperator = false;
-          //skip = true;
+
           return;
         }
 
@@ -278,64 +234,77 @@ function App() {
           return;
         }
 
-        //console.log("stack length: " + stack.length);
-
         while (
           stack.length != 0 &&
           operator.includes(stack[stack.length - 1]) &&
           precedenceOf(stack[stack.length - 1]) >= precedenceOf(element)
         ) {
-          //var top = stack[stack.length - 1];
-          console.log(
-            "inside the while loppppppppp: " + stack[stack.length - 1]
-          );
-
           numbers.push(stack[stack.length - 1]);
           stack.pop();
-
-          //count++;
         }
-        console.log("number here: " + numbers);
-        console.log("stack here1: " + stack);
 
         stack.push(element);
         expectingOperator = false;
-        console.log("stack here2: " + stack);
+      }
+
+      // if its number
+      else {
+        console.log("current elem: " + element);
+        if (expectingOperator) {
+          console.log("trouble: " + element);
+          skip = true;
+          return;
+        }
+
+        if (element == "") {
+          return;
+        }
+
+        numbers.push(element);
+        expectingOperator = true;
+        console.log("element : " + element);
+        console.log("stack : " + stack);
+        console.log("number : " + numbers);
       }
     });
 
     if (!expectingOperator) {
-      console.log("something wrong: ");
       return;
     }
-
-    console.log("before we finish" + stack.length);
 
     // the rest of operators to numbers
     while (stack.length != 0) {
       var top = stack.pop();
       if (top == "(") {
-        return "Errorrr";
+        return "Error";
       }
       numbers.push(top);
     }
-    //console.log("numbers: " + numbers.join(" "));
 
+    console.log("converted: " + numbers);
     var ans = evaluateExpression(numbers);
+
     if (ans == "Error") {
       return "Error";
     }
     expectingOperator = false;
-    // returning answer.
     return ans;
   }
 
   const handleClick = (value) => {
     var delim = ",";
+
+    if (value == "") {
+      return;
+    }
+
     if (value == "C") {
       setTyped("");
       setResult("");
-    } else if (
+    }
+
+    // if logarithmic or trigonometry
+    else if (
       value == "ln" ||
       value == "log" ||
       value == "sin" ||
@@ -343,25 +312,49 @@ function App() {
       value == "tan" ||
       value == "cot"
     ) {
-      if (!operations.includes(typed.slice(-1)) && typed != "") {
-        //console.log("no consec ops");
+      console.log("atleast here: " + value);
+      console.log("atleast typed: " + typed + " : size " + typed.length);
+
+      // if no operators before
+      if (
+        typed == "" ||
+        typed.slice(-1) == "(" ||
+        operations.includes(typed.slice(-1))
+      ) {
         setTyped(typed + value + "(");
-        setResult(result + delim + "x" + delim + value + delim + "(");
+        setResult(result + value + ",(,");
         return;
       }
 
+      // if after open paren or operator
+      else if (operations.includes(typed.slice(-1)) || typed.slice(-1) == "(") {
+      } else if (typed.slice(-1) == ".") {
+        return;
+      }
       setTyped(typed + value + "(");
-      setResult(result + delim + value + delim + "(");
+      setResult(result + delim + value + delim + "(" + delim);
     }
-    // else if (value == "log") {
-    //   //var calc = Math.log10(value);
-    //   setTyped(typed + value + "(");
-    //   setResult(result + value + "(");
-    // } 6)
+
+    // opening parentheses
+    else if (value == "(") {
+      // operation before parenthesis
+      if (operations.includes(typed.slice(-1)) || typed.slice(-1) == "(") {
+        setTyped(typed + value);
+        setResult(result + value + delim);
+      } else if (typed == "") {
+        setTyped(typed + value);
+        setResult(result + value + delim);
+      }
+    }
+
+    // closing parentheses
     else if (value == ")") {
-      console.log("previous: " + result.slice(-1));
-      if (operations.includes(typed.slice(-1)) || typed == "") {
-        //return;
+      if (
+        operations.includes(typed.slice(-1)) ||
+        typed.slice(-1) == "(" ||
+        typed == ""
+      ) {
+        return;
       }
       let countOp = 0;
       let countCl = 0;
@@ -374,18 +367,36 @@ function App() {
         }
       }
 
-      // no opening to match
+      // counts both opening and closing and compare
       if (countOp <= countCl) {
-        console.log("no opening to match");
-        return;
+        return "Error";
       } else {
+        if (!isNaN(typed.slice(-1))) {
+          setTyped(typed + value);
+          setResult(result + delim + value + delim);
+          return;
+        }
         setTyped(typed + value);
-        setResult(result + delim + value);
+        setResult(result + value + delim);
       }
+    }
 
-      //return;
-    } else if (value == "=") {
-      let count = 0;
+    // opening bracket
+    else if (value == "{") {
+      return;
+    }
+
+    // closing parentheses
+    else if (value == "}") {
+      return;
+    }
+    // closing parentheses
+    else if (value == "(-)") {
+      return;
+    }
+
+    // end of expression
+    else if (value == "=") {
       let pos = 0;
       var befor = "";
       var chunk = "";
@@ -401,11 +412,11 @@ function App() {
             j++;
           }
           let lasPos = result.length - 2;
-          console.log(i + " : " + lasPos);
+
           if (i == lasPos) {
             var subs = convertToPostFix(-1);
+            console.log("subs : " + subs);
             setTyped(subs);
-            console.log("final1: " + subs);
             return;
           }
 
@@ -421,121 +432,166 @@ function App() {
           ans = befor;
         }
       }
-      console.log("before: " + befor);
-      console.log("chunk: " + chunk);
-      console.log("lastPart: " + lastPart);
-      console.log("ans : " + ans.length + " : " + ans);
 
       ans = convertToPostFix(ans);
+      console.log("ans : " + ans);
       setTyped(ans);
-      console.log("final2: " + ans);
 
       return;
+    }
+
+    // if -
+    else if (value == "-") {
+      // - at the beginning
+      if (typed == "" || typed.slice(-2) == "--" || typed.slice(-1) == "(") {
+        setTyped(typed + value);
+        setResult(result + "(,0,-,`");
+        console.log("in1 : ");
+      }
+
+      // after a number
+      else if (!isNaN(typed.slice(-1)) || typed.slice(-1).includes(".")) {
+        setTyped(typed + value);
+        setResult(result + delim + value + delim);
+        return;
+      }
+      // - after operators
+      else if (
+        !typed.slice(-2).includes("-") &&
+        typed.slice(-2) != "--" &&
+        value == "-"
+      ) {
+        setTyped(typed + value);
+        setResult(result + "(,0,-,`");
+      }
     } else {
       // wont allow censecutive operations or at the begginning
-      // isNaN(typed.slice(-1)) ||
       if (
         (typed == "" || operations.includes(typed.slice(-1))) &&
         operations.includes(value)
       ) {
-        if (value == "-" && typed.slice(-2) != "--") {
-          setTyped(typed + value);
-          setResult(result + delim + "(,0,-`");
-        } else {
-          console.log("no consec allowed here");
-        }
-
-        //return;
+        console.log("nah dude : " + value);
+        return;
+        // no operators after opening except -
       } else if (
         !(value == "-") &&
         typed.slice(-1) == "(" &&
         operations.includes(value)
       ) {
-        //return;
-        // no number after closing and before opening parenthesis
-      } else if (
-        typed != "" &&
-        ((value == "(" && !isNaN(typed.slice(-1))) ||
-          (typed.slice(-1) == ")" && !isNaN(value)))
-      ) {
-        //return;
       }
+
+      // no consec dots
+      else if (value == ".") {
+        if (typed.slice(-4).includes(".")) {
+          return;
+        }
+        // join . onto previous number
+        else if (!isNaN(typed.slice(-1)) || typed.slice(-1) != ")") {
+          setResult(result + ".");
+          setTyped(typed + value);
+          console.log("res : " + result);
+          //console.log("temp : " + temp);
+        }
+      }
+
+      //+ x and /
+      else if (value == "+" || value == "/" || value == "x") {
+        console.log("the three ops : " + value);
+        if (!isNaN(typed.slice(-1))) {
+          setTyped(typed + value);
+          setResult(result + delim + value + delim);
+          return;
+        }
+        setTyped(typed + value);
+        setResult(result + value + delim);
+      }
+
       // if its number
       else {
-        if (typed.length == 1 && typed.slice(-1) == 0 && value == "0") {
-        } else if (
-          (!isNaN(typed.slice(-1)) || typed.slice(-1) == ".") &&
-          (!isNaN(value) || value == ".")
-        ) {
+        // no unnecessary zeros
+        if (typed.length == 1 && typed.slice(-1) == "0" && value == "0") {
+        } else {
+          if (typed.slice(-1) == "(") {
+            setTyped(typed + value);
+            setResult(result + value);
+            return;
+          }
+
           setTyped(typed + value);
           setResult(result + value);
-          //return;
-        } else {
-          setTyped(typed + value);
-          setResult(result + delim + value);
+          console.log("current value : " + value);
+          console.log("here : " + result);
         }
       }
     }
-
-    console.log("result: " + result);
-    console.log("size: " + result.length);
   };
 
   return (
     <div className="App">
       <div className="container">
-        <div className="screen">
-          <div className="result">{typed || 0}</div>
-        </div>
-        <div className="firstLayer">
-          <button onClick={() => handleClick("C")}>C</button>
-          <button onClick={() => handleClick("sin")}>sin</button>
-          <button onClick={() => handleClick("cos")}>cos</button>
-          <button onClick={() => handleClick("tan")}>tan</button>
-          <button onClick={() => handleClick("cot")}>cot</button>
-          <button onClick={() => handleClick("/")}>/</button>
-        </div>
-        <div className="secondLayer">
-          <button onClick={() => handleClick("(")}> (</button>
-          <button onClick={() => handleClick(")")}> )</button>
-          <button onClick={() => handleClick("7")}>7</button>
-          <button onClick={() => handleClick("8")}>8</button>
-          <button onClick={() => handleClick("9")}>9</button>
-          <button onClick={() => handleClick("x")}>x</button>
-        </div>
+        <div className="calculator">
+          <div className="screen">
+            <div className="result">{typed || 0}</div>
+          </div>
+          <div className="firstLayer">
+            <button onClick={() => handleClick("C")}>C</button>
+            <button onClick={() => handleClick("sin")}>sin</button>
+            <button onClick={() => handleClick("cos")}>cos</button>
+            <button onClick={() => handleClick("tan")}>tan</button>
+            <button onClick={() => handleClick("cot")}>cot</button>
+            <button className="leftcol" onClick={() => handleClick("/")}>
+              /
+            </button>
+          </div>
+          <div className="secondLayer">
+            <button onClick={() => handleClick("(")}> (</button>
+            <button onClick={() => handleClick(")")}> )</button>
+            <button onClick={() => handleClick("7")}>7</button>
+            <button onClick={() => handleClick("8")}>8</button>
+            <button onClick={() => handleClick("9")}>9</button>
+            <button className="leftcol" onClick={() => handleClick("x")}>
+              x
+            </button>
+          </div>
 
-        <div className="thirdLayer">
-          <button>
-            <span onClick={() => handleClick("{")}>&#123;</span>
-          </button>
-          <button onClick={() => handleClick("}")}>
-            <span>&#x7D;</span>
-          </button>
-          <button onClick={() => handleClick("4")}>4</button>
-          <button onClick={() => handleClick("5")}>5</button>
-          <button onClick={() => handleClick("6")}>6</button>
-          <button onClick={() => handleClick("-")}>-</button>
-        </div>
+          <div className="thirdLayer">
+            <button>
+              <span onClick={() => handleClick("{")}>&#123;</span>
+            </button>
+            <button onClick={() => handleClick("}")}>
+              <span>&#x7D;</span>
+            </button>
+            <button onClick={() => handleClick("4")}>4</button>
+            <button onClick={() => handleClick("5")}>5</button>
+            <button onClick={() => handleClick("6")}>6</button>
+            <button className="leftcol" onClick={() => handleClick("-")}>
+              -
+            </button>
+          </div>
 
-        <div className="fourthLayer">
-          <button onClick={() => handleClick("log")}>log</button>
-          <button onClick={() => handleClick("ln")}>ln</button>
-          <button onClick={() => handleClick("1")}>1</button>
-          <button onClick={() => handleClick("2")}>2</button>
-          <button onClick={() => handleClick("3")}>3</button>
-          <button onClick={() => handleClick("+")}>+</button>
-        </div>
-        <div className="finalLayer">
-          <button>...</button>
-          <button>...</button>
-          <button onClick={() => handleClick("0")}>0</button>
-          <button onClick={() => handleClick(".")}>.</button>
-          <button onClick={() => handleClick("(-)")}>(-)</button>
-          <button onClick={() => handleClick("=")}>=</button>
+          <div className="fourthLayer">
+            <button onClick={() => handleClick("log")}>log</button>
+            <button onClick={() => handleClick("ln")}>ln</button>
+            <button onClick={() => handleClick("1")}>1</button>
+            <button onClick={() => handleClick("2")}>2</button>
+            <button onClick={() => handleClick("3")}>3</button>
+            <button className="leftcol" onClick={() => handleClick("+")}>
+              +
+            </button>
+          </div>
+          <div className="finalLayer">
+            <button>...</button>
+            <button>...</button>
+            <button onClick={() => handleClick("0")}>0</button>
+            <button onClick={() => handleClick(".")}>.</button>
+            <button onClick={() => handleClick("(-)")}>(-)</button>
+            <button className="leftcol" onClick={() => handleClick("=")}>
+              =
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
 export default App;
