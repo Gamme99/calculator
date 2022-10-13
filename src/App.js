@@ -22,7 +22,7 @@ function App() {
   const [result, setResult] = useState("");
   const operations = ["-", "+", "/", "x"];
 
-  function othersCalc(operate, number) {
+  function EvaltrigAnLog(operate, number) {
     {
       if (operate == "log") {
         return Math.log10(number);
@@ -37,6 +37,81 @@ function App() {
       } else if (operate == "cot") {
         return 1 / Math.tan(number * (180 / Math.PI));
       }
+    }
+  }
+
+  function evaluateOper(operate, num1, num2) {
+    console.log("inside the  evaluating oper : " + num1 + " " + num2);
+    num1 = parseFloat(num1);
+    num2 = parseFloat(num2);
+    let ans = 0;
+    if (operate == "-") {
+      return num1 - num2;
+    } else if (operate == "+") {
+      ans = num1 + num2;
+      //console.log("answer : " + ans);
+      return ans;
+    } else if (operate == "/") {
+      if (num2 == 0) {
+        return "Error";
+      }
+
+      return num1 / num2;
+    } else if (operate == "x") {
+      return num1 * num2;
+    } else {
+      return "Error";
+    }
+  }
+
+  function evaluateExpression(expression) {
+    console.log("inside eval: " + expression);
+    let oper = [];
+    let numbers = [];
+    let Err = false;
+    console.log("expression here |" + expression + "| : " + expression.length);
+    expression.forEach((element) => {
+      console.log("element : " + element);
+      if (Err) {
+        return "Error";
+      }
+
+      if (isNaN(element)) {
+        if (isTrigOrLog(element) == true) {
+          var ans = EvaltrigAnLog(element, parseFloat(numbers.pop()));
+
+          console.log("trig or log ans" + ans);
+          if (isNaN(ans)) {
+            Err = true;
+            return "Error";
+          }
+
+          ans = ans.toFixed(7);
+
+          numbers.push(ans);
+        } else {
+          var num1 = parseFloat(numbers.pop());
+          var num2 = parseFloat(numbers.pop());
+          console.log("we are evaluating oper : ");
+          var ans = evaluateOper(element, num2, num1);
+
+          if (ans == "Error") {
+            Err = true;
+            return "Error";
+          }
+          numbers.push(ans);
+        }
+      } else {
+        numbers.push(element);
+        console.log("if number eval: |" + numbers + "|");
+      }
+    });
+    if (Err) {
+      return "Error";
+    } else {
+      console.log("finaly answer: " + numbers);
+      numbers = numbers[0].toFixed(8);
+      return numbers;
     }
   }
 
@@ -55,7 +130,7 @@ function App() {
   }
 
   // checks if element is logarithmic or trig
-  function isOther(element) {
+  function isTrigOrLog(element) {
     if (
       element == "log" ||
       element == "ln" ||
@@ -71,23 +146,20 @@ function App() {
   }
 
   function numberCalc(operate, number1, number2) {}
-  function overralResult(ans) {
+  function convertToPostFix(ans) {
     //console.log("Error : " + ans);
     if (ans == -1) {
       return "Error";
     }
+    console.log("answer right before |" + ans + "|");
     var expression;
     ans = ans.replace(/\s+/g, "");
     expression = ans.split(",");
-    //console.log("expression |" + expression.join("") + "|");
 
     let stack = [];
     let numbers = [];
     const operator = ["-", "+", "/", "x", "log", "sin", "cos", "tan", "cot"];
 
-    //console.log("expression " + expression.join(" "));
-    // check if operator amount is one less than numbers
-    //array.forEach((element) => {});
     var expectingOperator = false;
     var skip = false;
     expression.forEach((element) => {
@@ -115,6 +187,9 @@ function App() {
 
       // if opening
       else if (element == "(") {
+        expectingOperator = false;
+        console.log("-------------------------- ");
+        console.log("expecting operator: " + expectingOperator);
         if (expectingOperator) {
           skip = true;
           console.log(" couldnt pushed ( into stack ");
@@ -159,7 +234,7 @@ function App() {
         ) {
           console.log("top: " + " : " + (stack.slice(-1) == "+"));
           console.log("stack length: " + stack.length);
-          console.log("top is trig or logar: " + isOther(stack.slice(-1)));
+          console.log("top is trig or logar: " + isTrigOrLog(stack.slice(-1)));
           console.log(
             stack.slice(-1) +
               " >  " +
@@ -244,10 +319,15 @@ function App() {
       }
       numbers.push(top);
     }
-    console.log("numbers: " + numbers.join(" "));
-    //console.log("oper: " + stack);
-    //console.log("shunting: " + numbers);
-    return expression;
+    //console.log("numbers: " + numbers.join(" "));
+
+    var ans = evaluateExpression(numbers);
+    if (ans == "Error") {
+      return "Error";
+    }
+    expectingOperator = false;
+    // returning answer.
+    return ans;
   }
 
   const handleClick = (value) => {
@@ -323,7 +403,7 @@ function App() {
           let lasPos = result.length - 2;
           console.log(i + " : " + lasPos);
           if (i == lasPos) {
-            var subs = overralResult(-1);
+            var subs = convertToPostFix(-1);
             setTyped(subs);
             console.log("final1: " + subs);
             return;
@@ -346,7 +426,7 @@ function App() {
       console.log("lastPart: " + lastPart);
       console.log("ans : " + ans.length + " : " + ans);
 
-      ans = overralResult(ans);
+      ans = convertToPostFix(ans);
       setTyped(ans);
       console.log("final2: " + ans);
 
@@ -395,49 +475,14 @@ function App() {
           setResult(result + delim + value);
         }
       }
-
-      // closing the 0 - number
-      // if (result.slice(-1) == "`") {
-      //   var modif = result.substring(0, result.length - 1);
-      //   modif += delim + value + delim + ")";
-      //   setResult(modif);
-      //   console.log("modif :" + modif);
-      // }
     }
 
     console.log("result: " + result);
     console.log("size: " + result.length);
   };
 
-  // if (result.slice(-1) == "`") {
-  //   var delim = ",";
-  //   var modif = result.substring(0, result.length - 1);
-  //   modif += delim + value + delim + ")";
-  //   setResult(modif);
-  //   console.log("modif :" + modif);
-  // }
-
-  /* 
- 
-
-
-
-
-
- X          
-  -             8
-
-
-      })} */
-
   return (
     <div className="App">
-      {/* {memory.forEach((element) => {
-        console.log(element);
-        if (element != undefined) {
-          console.log(element);
-        }
-      })} */}
       <div className="container">
         <div className="screen">
           <div className="result">{typed || 0}</div>
