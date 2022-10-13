@@ -1,5 +1,6 @@
 import "./App.css";
 import { useReducer, useState } from "react";
+import { calculateNewValue } from "@testing-library/user-event/dist/utils";
 
 const ACTION = {
   NUMBER: "number",
@@ -8,132 +9,426 @@ const ACTION = {
   EVALUATE: "evaluate",
 };
 
-function reducer(state, { type, payload }) {
-  // switch(type){
-  //   case ACTION.CLEAR:
-  //     return {
-  //       ...state,
-  //       operation: ${operand || ""}${payload}
-  //     }
-  // }
+function calculateAns(expression) {
+  return 5;
 }
 
 function App() {
-  const [{ operand, operation }, setInput] = useReducer(reducer, {});
+  //const [{ operand, operation }, setInput] = useReducer(reducer, {});
 
   const [typed, setTyped] = useState("");
-  const [prev, setPrev] = useState("");
+  //const [prev, setPrev] = useState("");
 
   const [result, setResult] = useState("");
-  const memory = [];
+  const operations = ["-", "+", "/", "x"];
 
-  const handleClick = (value) => {
-    // if (!isNaN(value)) {
-    //   // memory.push(parseInt(value));
-    //   console.log("is number");
-    // } else {
-    //   //memory.push(value);
-    //   console.log("not number");
-    // }
+  function othersCalc(operate, number) {
+    {
+      if (operate == "log") {
+        return Math.log10(number);
+      } else if (operate == "ln") {
+        return Math.log(number);
+      } else if (operate == "sin") {
+        return Math.sin(number * (180 / Math.PI));
+      } else if (operate == "cos") {
+        return Math.cos(number * (180 / Math.PI));
+      } else if (operate == "tan") {
+        return Math.tan(number * (180 / Math.PI));
+      } else if (operate == "cot") {
+        return 1 / Math.tan(number * (180 / Math.PI));
+      }
+    }
+  }
 
-    if (value == "C") {
-      // setPrev("");
-      setTyped("");
-      setResult("");
-    } else if (value == "ln") {
-      setTyped(typed + value);
-      setResult(result + value);
-    } else if (value == "log") {
-      //var calc = Math.log10(value);
-      setTyped(typed + value);
-      setResult(result + value);
-    } else if (value == ")") {
-      for (let i = 1; i <= result.length; i++) {
-        var log = result.slice(-i);
+  function precedenceOf(oper) {
+    if (oper == "+" || oper == "-") return 0;
+    if (oper == "x" || oper == "/") return 1;
+    if (
+      oper == "log" ||
+      oper == "ln" ||
+      oper == "sin" ||
+      oper == "cos" ||
+      oper == "tan" ||
+      oper == "cot"
+    )
+      return 2;
+  }
 
-        if (log.includes("log(")) {
-          var chunk = result.slice(-(i - 4));
-          var cleaned = "";
-          console.log("chunk: " + chunk);
-          // chunk.forEach((element) => {
-          //   if (!NaN(element)) {
-          //     cleaned += element;
-          //   }
-          // });
-          console.log("number: " + cleaned);
-          var prev = result.substring(0, result.length - i);
+  // checks if element is logarithmic or trig
+  function isOther(element) {
+    if (
+      element == "log" ||
+      element == "ln" ||
+      element == "sin" ||
+      element == "cos" ||
+      element == "tan" ||
+      element == "cot"
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
-          var calc = Math.log10(result.slice(-(i - 4)));
-          calc = calc.toFixed(4);
+  function numberCalc(operate, number1, number2) {}
+  function overralResult(ans) {
+    //console.log("Error : " + ans);
+    if (ans == -1) {
+      return "Error";
+    }
+    var expression;
+    ans = ans.replace(/\s+/g, "");
+    expression = ans.split(",");
+    //console.log("expression |" + expression.join("") + "|");
 
-          setTyped(typed + value);
-          setResult(prev + calc);
-          break;
-        } else if (log.includes("ln(")) {
-          console.log("prev : " + prev);
-          var prev = result.substring(0, result.length - i);
-          var calc = Math.log(result.slice(-(i - 3)));
-          calc = calc.toFixed(4);
-          console.log("calc : " + calc);
-          setTyped(typed + value);
-          setResult(prev + calc);
-          break;
-        } else if (log.includes("sin(")) {
-          var prev = result.substring(0, result.length - i);
-          var calc = Math.sin((result.slice(-(i - 4)) * Math.PI) / 180);
-          console.log("number : " + result.slice(-(i - 4)));
-          calc = calc.toFixed(4);
-          console.log("calc : " + calc);
-          setTyped(typed + value);
-          setResult(prev + calc);
-          break;
-        } else if (log.includes("cos(")) {
-          var prev = result.substring(0, result.length - i);
-          var calc = Math.cos((result.slice(-(i - 4)) * Math.PI) / 180);
-          console.log("number : " + result.slice(-(i - 4)));
-          calc = calc.toFixed(4);
-          console.log("calc : " + calc);
-          setTyped(typed + value);
-          setResult(prev + calc);
-          break;
-        } else if (log.includes("tan(")) {
-          var prev = result.substring(0, result.length - i);
-          var calc = Math.tan((result.slice(-(i - 4)) * Math.PI) / 180);
-          console.log("number : " + result.slice(-(i - 4)));
-          calc = calc.toFixed(4);
-          console.log("calc : " + calc);
-          setTyped(typed + value);
-          setResult(prev + calc);
-          break;
-        } else if (log.includes("cot(")) {
-          var prev = result.substring(0, result.length - i);
-          var calc = 1 / Math.tan((result.slice(-(i - 4)) * Math.PI) / 180);
-          console.log("number : " + result.slice(-(i - 4)));
-          calc = calc.toFixed(4);
-          console.log("calc : " + calc);
-          setTyped(typed + value);
-          setResult(prev + calc);
-          break;
+    let stack = [];
+    let numbers = [];
+    const operator = ["-", "+", "/", "x", "log", "sin", "cos", "tan", "cot"];
+
+    //console.log("expression " + expression.join(" "));
+    // check if operator amount is one less than numbers
+    //array.forEach((element) => {});
+    var expectingOperator = false;
+    var skip = false;
+    expression.forEach((element) => {
+      console.log("stack " + stack);
+      console.log("numbers " + numbers);
+      if (skip) {
+        console.log("mission aborted ");
+        return;
+      }
+
+      // if its number
+      console.log("element: " + element);
+      if (!isNaN(element)) {
+        if (expectingOperator) {
+          skip = true;
+          console.log("retrned cuz found: " + element);
+          return;
+        }
+        numbers.push(element);
+        console.log("here all cool " + element);
+
+        expectingOperator = true;
+        console.log("numbers " + numbers);
+      }
+
+      // if opening
+      else if (element == "(") {
+        if (expectingOperator) {
+          skip = true;
+          console.log(" couldnt pushed ( into stack ");
+          return;
+        }
+        console.log("pushed ( into stack ");
+        stack.push(element);
+      }
+
+      // if closing
+      else if (element == ")") {
+        if (!expectingOperator) {
+          skip = true;
+          return;
+        }
+        console.log("stack " + stack);
+        var top = stack.pop();
+        while (stack.length != 0 && top != "(") {
+          numbers.push(top);
+          top = stack.pop();
         }
 
-        console.log("not found : " + log);
+        // if stack is empty before opening is found
+        if (top != "(") {
+          console.log("no matching parentheses " + top);
+          skip = true;
+          return;
+        }
+
+        expectingOperator = true;
       }
+
+      // if operators
+      else {
+        if (
+          element == "log" ||
+          element == "ln" ||
+          element == "sin" ||
+          element == "cos" ||
+          element == "tan" ||
+          element == "cot"
+        ) {
+          console.log("top: " + " : " + (stack.slice(-1) == "+"));
+          console.log("stack length: " + stack.length);
+          console.log("top is trig or logar: " + isOther(stack.slice(-1)));
+          console.log(
+            stack.slice(-1) +
+              " >  " +
+              element +
+              " : " +
+              (precedenceOf(stack[stack.length - 1]) >= precedenceOf(element))
+          );
+          console.log(
+            "top is operator: " + operator.includes(stack[stack.length - 1])
+          );
+
+          let count = 0;
+          var top = "";
+          var recent = stack[stack.length - 1];
+          while (
+            stack.length != 0 &&
+            operator.includes(stack[stack.length - 1]) &&
+            precedenceOf(stack[stack.length - 1]) >= precedenceOf(element)
+          ) {
+            //var top = stack[stack.length - 1];
+            console.log(
+              "inside the while loppppppppp: " + stack[stack.length - 1]
+            );
+
+            numbers.push(stack[stack.length - 1]);
+            stack.pop();
+
+            count++;
+          }
+          console.log("number here: " + numbers);
+          console.log("stack here1: " + stack);
+
+          stack.push(element);
+          expectingOperator = false;
+          //skip = true;
+          return;
+        }
+
+        if (!expectingOperator) {
+          skip = true;
+          return;
+        }
+
+        //console.log("stack length: " + stack.length);
+
+        while (
+          stack.length != 0 &&
+          operator.includes(stack[stack.length - 1]) &&
+          precedenceOf(stack[stack.length - 1]) >= precedenceOf(element)
+        ) {
+          //var top = stack[stack.length - 1];
+          console.log(
+            "inside the while loppppppppp: " + stack[stack.length - 1]
+          );
+
+          numbers.push(stack[stack.length - 1]);
+          stack.pop();
+
+          //count++;
+        }
+        console.log("number here: " + numbers);
+        console.log("stack here1: " + stack);
+
+        stack.push(element);
+        expectingOperator = false;
+        console.log("stack here2: " + stack);
+      }
+    });
+
+    if (!expectingOperator) {
+      console.log("something wrong: ");
+      return;
+    }
+
+    console.log("before we finish" + stack.length);
+
+    // the rest of operators to numbers
+    while (stack.length != 0) {
+      var top = stack.pop();
+      if (top == "(") {
+        return "Errorrr";
+      }
+      numbers.push(top);
+    }
+    console.log("numbers: " + numbers.join(" "));
+    //console.log("oper: " + stack);
+    //console.log("shunting: " + numbers);
+    return expression;
+  }
+
+  const handleClick = (value) => {
+    var delim = ",";
+    if (value == "C") {
+      setTyped("");
+      setResult("");
+    } else if (
+      value == "ln" ||
+      value == "log" ||
+      value == "sin" ||
+      value == "cos" ||
+      value == "tan" ||
+      value == "cot"
+    ) {
+      if (!operations.includes(typed.slice(-1)) && typed != "") {
+        //console.log("no consec ops");
+        setTyped(typed + value + "(");
+        setResult(result + delim + "x" + delim + value + delim + "(");
+        return;
+      }
+
+      setTyped(typed + value + "(");
+      setResult(result + delim + value + delim + "(");
+    }
+    // else if (value == "log") {
+    //   //var calc = Math.log10(value);
+    //   setTyped(typed + value + "(");
+    //   setResult(result + value + "(");
+    // } 6)
+    else if (value == ")") {
+      console.log("previous: " + result.slice(-1));
+      if (operations.includes(typed.slice(-1)) || typed == "") {
+        //return;
+      }
+      let countOp = 0;
+      let countCl = 0;
+      for (let i = 0; i < typed.length; i++) {
+        if (typed[i] == "(") {
+          countOp++;
+        }
+        if (typed[i] == ")") {
+          countCl++;
+        }
+      }
+
+      // no opening to match
+      if (countOp <= countCl) {
+        console.log("no opening to match");
+        return;
+      } else {
+        setTyped(typed + value);
+        setResult(result + delim + value);
+      }
+
+      //return;
     } else if (value == "=") {
-      setResult(result);
+      let count = 0;
+      let pos = 0;
+      var befor = "";
+      var chunk = "";
+      var lastPart = "";
+      var ans = "";
+      for (let i = 0; i < result.length; i++) {
+        befor += result[i];
+        if (result[i + 1] == "`") {
+          let j = i + 2;
+          while (j < result.length && !operations.includes(result[j])) {
+            pos = j;
+            chunk += result[j];
+            j++;
+          }
+          let lasPos = result.length - 2;
+          console.log(i + " : " + lasPos);
+          if (i == lasPos) {
+            var subs = overralResult(-1);
+            setTyped(subs);
+            console.log("final1: " + subs);
+            return;
+          }
+
+          lastPart = result.substring(pos + 1, result.length);
+          if (lastPart == "") {
+            ans = befor + chunk + ",)" + lastPart;
+          } else {
+            ans = befor + chunk + ")," + lastPart;
+          }
+
+          break;
+        } else {
+          ans = befor;
+        }
+      }
+      console.log("before: " + befor);
+      console.log("chunk: " + chunk);
+      console.log("lastPart: " + lastPart);
+      console.log("ans : " + ans.length + " : " + ans);
+
+      ans = overralResult(ans);
+      setTyped(ans);
+      console.log("final2: " + ans);
+
+      return;
     } else {
-      setTyped(typed + value);
-      setResult(result + value);
+      // wont allow censecutive operations or at the begginning
+      // isNaN(typed.slice(-1)) ||
+      if (
+        (typed == "" || operations.includes(typed.slice(-1))) &&
+        operations.includes(value)
+      ) {
+        if (value == "-" && typed.slice(-2) != "--") {
+          setTyped(typed + value);
+          setResult(result + delim + "(,0,-`");
+        } else {
+          console.log("no consec allowed here");
+        }
+
+        //return;
+      } else if (
+        !(value == "-") &&
+        typed.slice(-1) == "(" &&
+        operations.includes(value)
+      ) {
+        //return;
+        // no number after closing and before opening parenthesis
+      } else if (
+        typed != "" &&
+        ((value == "(" && !isNaN(typed.slice(-1))) ||
+          (typed.slice(-1) == ")" && !isNaN(value)))
+      ) {
+        //return;
+      }
+      // if its number
+      else {
+        if (typed.length == 1 && typed.slice(-1) == 0 && value == "0") {
+        } else if (
+          (!isNaN(typed.slice(-1)) || typed.slice(-1) == ".") &&
+          (!isNaN(value) || value == ".")
+        ) {
+          setTyped(typed + value);
+          setResult(result + value);
+          //return;
+        } else {
+          setTyped(typed + value);
+          setResult(result + delim + value);
+        }
+      }
+
+      // closing the 0 - number
+      // if (result.slice(-1) == "`") {
+      //   var modif = result.substring(0, result.length - 1);
+      //   modif += delim + value + delim + ")";
+      //   setResult(modif);
+      //   console.log("modif :" + modif);
+      // }
     }
 
     console.log("result: " + result);
-
     console.log("size: " + result.length);
   };
 
-  // const initialState = {
-  //   input:
+  // if (result.slice(-1) == "`") {
+  //   var delim = ",";
+  //   var modif = result.substring(0, result.length - 1);
+  //   modif += delim + value + delim + ")";
+  //   setResult(modif);
+  //   console.log("modif :" + modif);
   // }
-  //console.log("size: " + memory.length);
+
+  /* 
+ 
+
+
+
+
+
+ X          
+  -             8
+
+
+      })} */
 
   return (
     <div className="App">
